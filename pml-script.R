@@ -12,38 +12,15 @@
 ## Library Calls
 library(dplyr)
 library(caret)
-library(knitr)
+
 
 ## Download the training data
 train.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
 train.file <- "train.csv"
-download.file(train.url, train.file, method = "curl")
-train.all <- read.csv(train.file)
-
-## Divide the training data into a true training set and a "quiz" set
-## "classe" is the A-E description
-## "num_window" identifies the particular repitition of the exercise
-train <- train.all %>% group_by(num_window, classe) %>% sample_frac(0.7)
-quiz <- train.all[-train$X,]
-
-## First Run: Normalized Range
-## Issue: Certain columns are only calculated at the end of a rep --> na
-NormalRange <- function(x) {
-  ## Computes the normalized range of a vector
-  ## Args: x a vector
-  ## Returns: (max(x) - min(x))/mean(x)
-  if(is.factor(x)) {
-    x <- as.numeric(x)
-  }
-  return((max(x)-min(x)/mean(x)))
+if (!exists("train.csv")) {
+  download.file(train.url, train.file, method = "curl")
 }
-
-train.nr <- train %>% select(-1, -2, -4, -5, -6) %>% group_by(num_window, classe) %>%
-  summarise_each(funs(NormalRange)) %>%
-quiz.nr <- quiz %>% select(-1, -2, -4, -5, -6) %>% group_by(num_window, classe) %>%
-  summarise_each(funs(NormalRange))
-
-nr.model <- train(classe ~ ., data = train.nr[-1,], method = "rf")
+train.all <- read.csv(train.file)
 
 ###############
 ## Filter and select summary statistics
@@ -59,4 +36,4 @@ SumStats <- . %>% filter(new_window == 'yes') %>%
 train.ss <- SumStats(train)
 quiz.ss <- SumStats(quiz)
 
-ss.model <- train(classe ~ ., data = train.ss[-1,], method = "rf")
+ss.model <- train(classe ~ ., data = train.ss[-1,], method = "nb")
