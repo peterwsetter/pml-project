@@ -7,15 +7,10 @@ output: html_document
 
 
 ```{r, message = FALSE}
+source("pml-script.R")
 library(dplyr)
 library(caret)
 library(knitr)
-train.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
-train.file <- "train.csv"
-download.file(train.url, train.file, method = "curl")
-train.all <- read.csv(train.file)
-train <- train.all %>% group_by(num_window, classe) %>% sample_frac(0.7)
-quiz <- train.all[-train$X,]
 comp.prop <- rbind(summary(train$classe)/nrow(train), summary(quiz$classe)/nrow(quiz)) 
 kable(cbind(c("train", "quiz"), round(comp.prop, 3)))
 ```
