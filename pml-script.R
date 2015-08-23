@@ -60,7 +60,7 @@ pml_write_files = function(x){
 train.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
 train.file <- "train.csv"
 if (!file.exists("train.csv")) {
-    download.file(train.url, train.file, method = "wininet")
+    download.file(train.url, train.file, method = "curl")
 }
 ## Data set contains #DIV/0! for some of its variables
 ## Set #DIV/0! to NA
@@ -103,6 +103,11 @@ model.rf <- TrainClasse('rf')
 ## Stochastic Gradient Boosting
 model.gbm <- TrainClasse('gbm')
 
+########
+## Validate on quiz data
+predict.quiz <- predict(model.rf, newdata = quiz.filtered)
+confusionMatrix(predict.quiz, quiz.filtered$classe)$overall[1]
+
 #########
 ## Download testing data
 test.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
@@ -116,4 +121,5 @@ test <- read.csv(test.file, na.strings = c("NA", "#DIV/0!"))
 test.filtered <- Filtered(test)
 
 ## Find predictions and write to files for submission
-predict.test <- predict(ss.model.rf, test.ss)
+predict.test <- predict(model.rf, test.filtered) %>% as.character
+pml_write_files(predict.test)

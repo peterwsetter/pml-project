@@ -5,14 +5,60 @@ date: "August 22, 2015"
 output: html_document
 ---
 ### Introduction
-This project built a prediction model from the Weight Lifting Exercise data set of Velleso et al. Based on the measurements taken from accelerometers on the belt, forearm, arm, and dumbell, the model predicts if the exercise is performed correctly or one of four common errors in the exercise. The challenge of this project was to make predictions on a single data point during the exercise, rather tha
+The next generation of wearable devices for exercise is the "Virtual Personal Trainer". The current iteration focuses on goal-setting and data-tracking, while the next level of this technology will help users perform exercise for the maximum effectiveness, efficiency, and safety.
 
+This project built a prediction model from the [Weight Lifting Exercise data set of Velleso et al](http://groupware.les.inf.puc-rio.br/har). Based on the measurements taken from accelerometers on the belt, forearm, arm, and dumbbell, the model predicts if the exercise is performed correctly or one of four common errors. The challenge of this project was to make predictions on a single data point during the exercise, rather than on data from the the entire repetition.
 
-```{r, message = FALSE, echo = FALSE, warnings = FALSE, cache = TRUE}
-source('pml.script.R')
-library(dplyr)
-library(caret)
+In the Github repo for this project, readers can find:
+* R script that performs the full analysis
+* Train and quiz data sets
+* Models discussed in this report
+
+### Data
+After the data was downloaded, it was read into R, the process of which transformed the `#DIV/0!` Excel error into `NA` values. The training data was split 0.7/0.3 into training and "quiz" portions, the latter for final validation of the model.
+```{r, message = FALSE, echo = FALSE, warnings = FALSE}
 library(knitr)
+library(caret)
+load('pml-project-data.RData')
 comp.prop <- rbind(summary(train$classe)/nrow(train), summary(quiz$classe)/nrow(quiz)) 
-kable(cbind(c("train", "quiz"), round(comp.prop, 3)))
+kable(cbind(c("train", "quiz"), round(comp.prop, 3)), caption = "Table 1")
 ```
+
+The Table 1 summarizes the proportions of each exercise class type, showing that the two sets are nearly identical in make-up.
+
+The data was then filtered to remove the summary statistic variables. These variables, such as maximum, minimum, and average, were computed at the conclusion of an exercise repetition and are unavailable in the test data set. 
+
+This previous filtering step brought the number of predictor variables to 52. In order to eliminate variables that were unlikely to be strong predictors, the [coefficient of variation](https://en.wikipedia.org/wiki/Coefficient_of_variation) was determined for each variable. Variables with a coefficient of variation less than the average were removed from the training data, leaving ten predictor variables.
+
+### Models and Their Performance
+Three models were used on the training set: CART, random forest, and stochastic gradient boosting. These models were chosen because they represent many of the concepts learned in the Practical Machine Learning course. The following unary function was used to train each model.
+
+```{r, eval=FALSE}
+control.spec <- trainControl(method = 'cv', number = 10)
+
+TrainClasse <- . %>% train(classe ~ ., 
+                           data = train.filtered, 
+                           trControl = control.spec,
+                           method = .)
+```
+
+During the training the data was 10-fold cross-validated, ten chosen to balance the bias and variation in the esimate. Using cross-validation in this way provides a reasonable estimate of the out of error for the model. There three models were:
+
+```{r}
+model.cart
+model.rf
+model.gbm
+```
+
+The final accuracy -- which estimates the out-of-sample error -- of the three models was 0.47 for the CART model, 0.95 for the random forest, and 0.77 for stochastic gradient boosting. The random forest far outperformed the other two models. As a final validation of the model, it was used to predict on the quiz data.
+
+```{r}
+predict.quiz <- predict(model.rf, newdata = quiz)
+cm <- confusionMatrix(predict.quiz, quiz$classe)
+print(cm$overall)
+```
+
+This validation shows that the model accuracy was `r round(cm$overall[1], 2)` on this separate data set.
+
+### Conclusions
+The random forest model far outperformed the other two models tested, obtaining an accuracy of 0.95 on the cross-validated training set and 0.98 on the quiz set. This project provides a proof-of-concept of how sensors could accurately assist users to properly perform exercises.
