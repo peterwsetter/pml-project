@@ -9,7 +9,7 @@ The next generation of wearable devices for exercise is the "Virtual Personal Tr
 
 This project built a prediction model from the [Weight Lifting Exercise data set of Velleso et al](http://groupware.les.inf.puc-rio.br/har). Based on the measurements taken from accelerometers on the belt, forearm, arm, and dumbbell, the model predicts if the exercise is performed correctly or one of four common errors. The challenge of this project was to make predictions on a single data point during the exercise, rather than on data from the the entire repetition.
 
-In the Github repo for this project, readers can find:
+In the [Github repo](https://github.com/peterwsetter/pml-project) for this project, readers can find:
 * R script that performs the full analysis
 * Train and quiz data sets
 * Models discussed in this report
