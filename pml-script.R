@@ -68,25 +68,24 @@ for (i in train.ss.col:2) {
 }
 ##########
 ##Train models
+control.spec <- trainControl(method = 'cv', number = 10) 
 
 ## CART
 set.seed(2015)
-ss.model.rpart <- train(classe ~ ., data = train.ss, method = "rpart")
-
-prdct.ss.rpart <- predict(ss.model.rpart, newdata = quiz.ss)
-
-cm.rpart <- confusionMatrix(data = prdct.ss.rpart, quiz.ss$classe)
+ss.model.rpart <- train(classe ~ ., 
+                        data = train.ss, 
+                        trControl = control.spec, 
+                        method = "rpart")
 
 ## Random forest (randomForest package)
-ss.model.rf <- train(classe ~ ., data = train.ss, method = "rf")
-
-prdct.ss.rf <- predict(ss.model.rf, newdata = quiz.ss)
-
-cm.rf <- confusionMatrix(data = prdct.ss.rf, quiz.ss$classe)
+ss.model.rf <- train(classe ~ ., 
+                     data = train.ss, 
+                     trControl = control.spec, 
+                     method = "rf")
 
 ## Stochastic Gradient Boosting
-ss.model.gbm <- train(classe ~ ., data = train.ss, method = "gbm")
-
-prdct.ss.gbm <- predict(ss.model.gbm, newdata = quiz.ss)
-
-cm.gbm <- confusionMatrix(data = prdct.ss.gbm, quiz.ss$classe)
+ss.model.gbm <- train(classe ~ ., 
+                      data = train.ss, 
+                      trControl = control.spec, 
+                      method = "gbm",
+                      verbose = FALSE)
